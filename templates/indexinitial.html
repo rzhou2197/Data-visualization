@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link href="../static/mystyle.css" rel="stylesheet" type="text/css"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1"/>
+    <title>china</title>
+    <script type="text/javascript" src="http://apps.bdimg.com/libs/d3/3.4.8/d3.min.js"></script>
+ 
+    <style>
+        path {
+            
+            stroke: purple;
+            stroke-width: .5px;
+        }
+ 
+        path:hover {
+            fill: limegreen;
+        }
+    </style>
+</head>
+ 
+<body>
+<div id="leftside">
+<div id="textcontent">
+<div >
+   <label>
+        <span id="tooltip"></span>
+    </label>
+</div>
+<div>
+<label>
+        <span id="tool"></span>
+    </label>
+	</div>
+	</div>
+<div id="map">
+</div>
+</div>
+<div id="rightside">
+<div id = "ratio">
+<h2>Here is for a fig</h2>
+</div>
+<div id="school">
+<h1>another figure</h1>
+</div>
+</div>
+<script type="text/javascript">
+    var width = 960, height = 700;
+	
+ 
+    var svg = d3.select("#map").append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("preserveAspectRatio", "xMidYMid")
+            .attr("viewBox", "0 0 " + width + " " + height);
+	
+	
+	
+ 
+    //var tooltip = d3.select("#tooltip");
+	//var tool = d3.select("#tool");
+ 
+    var proj = d3.geo.mercator().center([105, 38]).scale(750).translate([width / 2, height / 2]);
+    var path = d3.geo.path().projection(proj);
+		cn={{ujson|tojson}};
+		peopleData={{df|tojson}};
+		
+		for (var j = 0; j < cn.features.length; j++)  {
+			
+		cn.features[j].properties.newValue =0;
+		cn.features[j].properties.male =0;
+		cn.features[j].properties.female =0;
+		
+		cn.features[j].properties.list= new Array();
+		
+		
+	}
+		
+		for (var i = 0; i < peopleData.length; i++) {
+	
+		var province = peopleData[i][3]; 
+		var name = peopleData[i][0];
+		var gender = peopleData[i][1];
+	
+		for (var j = 0; j < cn.features.length; j++)  {
+			var mapState = cn.features[j].properties.name;
+
+			if (province.indexOf(mapState)!=-1) {
+		cn.features[j].properties.list[cn.features[j].properties.newValue]=name;
+		cn.features[j].properties.newValue +=1; 
+		if(gender=="男") 
+			cn.features[j].properties.male+=1;
+		if(gender=="女") 
+			cn.features[j].properties.female+=1;
+		
+		break;
+		}
+	}
+}
+		
+		
+		var maxvalue = 30;
+        var minvalue = 0;
+		
+		var linear = d3.scale.linear()
+                        .domain([minvalue, maxvalue])
+                        .range([0, 1]);
+
+        
+        var a = d3.rgb(255,255,255);  
+        var b = d3.rgb(0,0,255);    
+         
+        
+        var computeColor = d3.interpolate(a,b);
+		
+		
+        svg.append("g")
+                .attr("class", "states")
+				.selectAll("path")
+                .data(cn.features)
+                .enter()
+                .append("path")
+                .attr("d", path)
+				.attr("fill",function(d){
+						var colorvalue = linear(d.properties.newValue);
+						var color = computeColor(colorvalue);
+						return color.toString();})
+				.on("click",function(d){
+					//showText(d.properties.name);
+					showText(d.properties.name);
+					showPeople(d.properties.list);
+					showGender([d.properties.male,d.properties.female]);
+					
+					
+					//showmalerate()
+					
+				});
+				
+   
+ 
+    //处理要显示的文字
+    function showText(_id) {
+		var tooltip = document.getElementById("tooltip");
+        tooltip.innerHTML=_id;
+    }
+	
+	function showPeople(array)
+	{
+		
+
+		var tool = document.getElementById("tool");
+		while(tool.hasChildNodes()) 
+    {
+        tool.removeChild(tool.firstChild);
+    }
+		for(var i=0;i<array.length;i++){
+		var newnode = document.createElement("button");
+		var peoplename = document.createTextNode(array[i]);
+		newnode.appendChild(peoplename);
+		newnode.setAttribute("class","button orange");
+		tool.appendChild(newnode);}
+	
+	}
+	
+	function showGender(dataset){
+		var tool = document.getElementById("ratio");
+		while(tool.hasChildNodes()) 
+    {
+        tool.removeChild(tool.firstChild);
+    }
+		
+		console.log(dataset);
+		var width=300;
+		var height=300;
+		var svg2 = d3.select("#ratio").append("svg")
+            .attr("width", width)
+            .attr("height", height);
+            //.attr("preserveAspectRatio", "xMidYMid")
+            //.attr("viewBox", "0 0 " + width + " " + height);
+		
+		var pie = d3.layout.pie();
+		var piedata = pie(dataset);
+		var outerRadius = 150; //外半径
+		var innerRadius = 0; //内半径，为0则中间没有空白
+
+	var arc = d3.svg.arc()  //弧生成器
+		.innerRadius(innerRadius)   //设置内半径
+		.outerRadius(outerRadius);  //设置外半径
+	
+	var arcs = svg2.selectAll("g")
+    .data(piedata)
+    .enter()
+    .append("g")
+    .attr("transform","translate("+ (width/2) +","+ (width/2) +")");
+		var color = d3.scale.category10();
+	arcs.append("path")
+    .attr("fill",function(d,i){
+        return color(i);
+    })
+    .attr("d",function(d){
+        return arc(d);   
+    });
+	
+	
+	arcs.append("text")
+    .attr("transform",function(d){
+        return "translate(" + arc.centroid(d) + ")";
+    })
+    .attr("text-anchor","middle")
+    .text(function(d){
+        return d.data;
+    });
+	
+	}
+	/*.on("mouseenter", function (d) {
+					tooltip.style("display", null);
+                    // name @ d.properties.name
+                   showText(d.id)
+                })
+				.on("mouseleave", function () {
+					tooltip.style("display", "none");
+					})*/
+</script>
+ 
+</body>
+ 
+</html>
