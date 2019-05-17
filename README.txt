@@ -17,4 +17,5 @@ Then
      * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
 
 Open http://127.0.0.1:5000/ in browser and you will see:
+ ![image](https://github.com/rzhou2197/Data-visualization/img/FIG1.png)
 
