@@ -1,6 +1,6 @@
-# D3.js integration with Flask
+D3.js integration with Flask
 
-## Virtualenv
+Virtualenv
 
 This package has one dependency, `Flask`, so to use it, I recommend using `virtualenv`.
 
@@ -8,12 +8,13 @@ This package has one dependency, `Flask`, so to use it, I recommend using `virtu
 	. flask-d3/bin/activate
 	python setup.py install
 
-## App manager
+To start it, run
+	python app.py
 
-The project creates a Flask app. The `app.py` file is the entry-point and is executable. To start it, run:
+Then 
+     $ env FLASK_APP=hello.py flask run
+     * Serving Flask app "hello"
+     * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
 
-	./app.py
+Open http://127.0.0.1:5000/ in browser and you will see:
 
-## Asynchronous
-
-This setup can run updates asynchronously. Use javascript's `setTimeout()` or some such functionality.
